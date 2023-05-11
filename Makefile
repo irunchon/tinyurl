@@ -1,3 +1,6 @@
+include .env
+export
+
 .PHONY: all
 
 all:
