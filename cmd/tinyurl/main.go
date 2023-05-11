@@ -6,5 +6,7 @@ import (
 )
 
 func main() {
-	fmt.Printf("%s\n", shortening.ShorteningURL())
+	for i := 0; i < 10; i++ {
+		fmt.Printf("%d - %s\n", i, shortening.ShorteningURL())
+	}
 }
