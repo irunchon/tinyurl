@@ -22,6 +22,7 @@ func (s *Service) ShorteningURL() string {
 		for i := 0; i < shortURLLength; i++ {
 			shortURL[i] = rune(alphabet[rand.Intn(len(alphabet)-1)])
 		}
+		// TODO: change error processing
 		if _, err := s.storage.GetLongURLbyShort(string(shortURL)); err != nil {
 			return string(shortURL)
 		}
