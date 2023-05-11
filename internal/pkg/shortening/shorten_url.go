@@ -1,9 +1,16 @@
 package shortening
 
-import "math/rand"
+import (
+	"github.com/irunchon/tinyurl/internal/pkg/storage"
+	"math/rand"
+)
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
 const shortURLLength = 10
+
+type Service struct {
+	storage storage.Storage
+}
 
 func ShorteningURL() string {
 	//for {

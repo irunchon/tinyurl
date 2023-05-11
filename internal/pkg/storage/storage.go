@@ -1,6 +1,7 @@
 package storage
 
 type Storage interface {
-	Get(string) (string, error)
-	Set(string, string)
+	GetShortURLbyLong(string) (string, error)
+	GetLongURLbyShort(string) (string, error)
+	SetShortAndLongURLs(string, string)
 }

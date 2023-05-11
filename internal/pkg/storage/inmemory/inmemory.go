@@ -8,27 +8,43 @@ import (
 var ErrNotFound = errors.New("not found")
 
 type Storage struct {
-	data map[string]string
-	mu   sync.RWMutex
+	keyShortURL map[string]string
+	keyLongURL  map[string]string
+	mu          sync.RWMutex
 }
 
 func NewInMemoryStorage() *Storage {
-	return &Storage{data: make(map[string]string)}
+	return &Storage{
+		keyShortURL: make(map[string]string),
+		keyLongURL:  make(map[string]string),
+	}
 }
 
-func (s *Storage) Get(str string) (string, error) {
+func (s *Storage) GetShortURLbyLong(longURL string) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	value, isFound := s.data[str]
+	value, isFound := s.keyLongURL[longURL]
 	if !isFound {
 		return "", ErrNotFound
 	}
 	return value, nil
 }
 
-func (s *Storage) Set(key string, value string) {
+func (s *Storage) GetLongURLbyShort(shortURL string) (string, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	value, isFound := s.keyShortURL[shortURL]
+	if !isFound {
+		return "", ErrNotFound
+	}
+	return value, nil
+}
+
+func (s *Storage) SetShortAndLongURLs(shortURL string, longURL string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.data[key] = value
+	s.keyLongURL[longURL] = shortURL
+	s.keyShortURL[shortURL] = longURL
 }
