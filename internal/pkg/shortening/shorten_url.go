@@ -12,13 +12,18 @@ type Service struct {
 	storage storage.Storage
 }
 
-func ShorteningURL() string {
-	//for {
-	shortURL := make([]rune, shortURLLength)
-	for i := 0; i < shortURLLength; i++ {
-		shortURL[i] = rune(alphabet[rand.Intn(len(alphabet)-1)])
+func NewService(s storage.Storage) *Service {
+	return &Service{s}
+}
+
+func (s *Service) ShorteningURL() string {
+	for {
+		shortURL := make([]rune, shortURLLength)
+		for i := 0; i < shortURLLength; i++ {
+			shortURL[i] = rune(alphabet[rand.Intn(len(alphabet)-1)])
+		}
+		if _, errNotFound := s.storage.GetLongURLbyShort(string(shortURL)); errNotFound != nil {
+			return string(shortURL)
+		}
 	}
-	// TO DO: check repetitions in storage
-	//}
-	return string(shortURL)
 }
