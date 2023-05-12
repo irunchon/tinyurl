@@ -42,9 +42,11 @@ func (s *Storage) GetLongURLbyShort(shortURL string) (string, error) {
 	return value, nil
 }
 
-func (s *Storage) SetShortAndLongURLs(shortURL string, longURL string) {
+func (s *Storage) SetShortAndLongURLs(shortURL string, longURL string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.keyLongURL[longURL] = shortURL
 	s.keyShortURL[shortURL] = longURL
+
+	return nil
 }

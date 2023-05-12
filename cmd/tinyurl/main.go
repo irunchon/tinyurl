@@ -4,11 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/irunchon/tinyurl/internal/pkg/shortening"
+	"github.com/irunchon/tinyurl/internal/pkg/storage"
 	"github.com/irunchon/tinyurl/internal/pkg/storage/inmemory"
+	"github.com/irunchon/tinyurl/internal/pkg/storage/postgres"
 	_ "github.com/lib/pq"
 	"os"
 )
 
+// TODO: port -> env
 const (
 	host     = "localhost"
 	port     = 5432
@@ -17,22 +20,27 @@ const (
 	dbname   = "urls_db"
 )
 
+// TODO: error processing
 func main() {
 	storageType := os.Getenv("STORAGE_TYPE")
+	var repo storage.Storage
 
 	switch storageType {
 	case "inmemory":
-		inmemoryStorageService()
+		repo = inmemory.NewInMemoryStorage()
 	case "postgres":
-		postgresStorageService()
+		db, err := setConnectionToPostgresDB()
+		if err != nil {
+			panic(err)
+		}
+		defer db.Close()
+		repo = postgres.NewPostgresStorage(db)
 	default:
 		fmt.Printf("Unknown storage type\n")
+		return
 	}
-}
 
-func inmemoryStorageService() {
-	storage := inmemory.NewInMemoryStorage()
-	service := shortening.NewService(storage)
+	service := shortening.NewService(repo)
 
 	strings := []string{
 		"@@@",
@@ -43,29 +51,27 @@ func inmemoryStorageService() {
 	}
 
 	for i := range strings {
-		storage.SetShortAndLongURLs(service.ShorteningURL(), strings[i])
+		err := repo.SetShortAndLongURLs(service.ShorteningURL(), strings[i])
+		if err != nil {
+			fmt.Printf("*** %v ***\n", err)
+		}
 	}
-	fmt.Printf("%v\n", storage)
-	val, err := storage.GetShortURLbyLong("!!!")
+	fmt.Printf("%v\n", repo)
+	val, err := repo.GetShortURLbyLong("!!!")
 	fmt.Printf("get for !!!: %v %v\n", val, err)
-	val, err = storage.GetShortURLbyLong("***")
+	val, err = repo.GetShortURLbyLong("***")
 	fmt.Printf("get for ***: %v %v\n", val, err)
 }
 
-func postgresStorageService() {
-	psqlconn := fmt.Sprintf(
+func setConnectionToPostgresDB() (*sql.DB, error) {
+	postgresDBConnection := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
-	db, err := sql.Open("postgres", psqlconn)
+	db, err := sql.Open("postgres", postgresDBConnection)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	defer db.Close()
-
 	err = db.Ping()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Connected!")
+	return db, err
 }
