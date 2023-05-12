@@ -61,6 +61,9 @@ func main() {
 	fmt.Printf("get for !!!: %v %v\n", val, err)
 	val, err = repo.GetShortURLbyLong("***")
 	fmt.Printf("get for ***: %v %v\n", val, err)
+
+	val, err = repo.GetLongURLbyShort("QLzinpjrTO")
+	fmt.Printf("\nget long for QLzinpjrTO: %v %v\n", val, err)
 }
 
 func setConnectionToPostgresDB() (*sql.DB, error) {
