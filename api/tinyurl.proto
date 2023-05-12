@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "github.com/irunchon/tinyurl";
+
+import "google/api/annotations.proto";
+
+package tinyurl;
+
+service ShortenURL{
+  rpc GetShortURLbyLong(LongURL) returns (ShortURL){
+    option (google.api.http) = {
+      post: "/v1/set_url"
+      body: "*"
+    };
+  }
+  rpc GetLongURLbyShort(ShortURL) returns(LongURL){
+    option (google.api.http) = {
+      get: "/v1/get_url"
+    };
+  }
+}
+
+message LongURL{
+  string long_url = 1;
+}
+
+message ShortURL{
+  string short_url = 1;
+}

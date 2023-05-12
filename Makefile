@@ -27,3 +27,9 @@ goose-up:
 .PHONY: goose-down
 goose-down:
 	goose -dir $(MIGRATIONS_DIR) postgres $(POSTGRES_CONNECT_STRING) down
+
+.PHONY: proto-generate
+proto-generate:
+	protoc --go_out=./pkg/tinyurl --go_opt=paths=source_relative \
+            --go-grpc_out=./pkg/tinyurl --go-grpc_opt=paths=source_relative \
+            api/tinyurl.proto
