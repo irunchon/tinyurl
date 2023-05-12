@@ -30,6 +30,5 @@ goose-down:
 
 .PHONY: proto-generate
 proto-generate:
-	protoc --go_out=./pkg/tinyurl --go_opt=paths=source_relative \
-            --go-grpc_out=./pkg/tinyurl --go-grpc_opt=paths=source_relative \
-            api/tinyurl.proto
+	buf mod update
+	buf generate
