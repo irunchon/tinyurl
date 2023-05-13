@@ -7,15 +7,15 @@ import "google/api/annotations.proto";
 package tinyurl;
 
 service ShortenURL{
-  rpc GetShortURLbyLong(LongURL) returns (ShortURL){
+  rpc GetShortURL(LongURL) returns (ShortURL){
     option (google.api.http) = {
       post: "/v1/set_url"
       body: "*"
     };
   }
-  rpc GetLongURLbyShort(ShortURL) returns(LongURL){
+  rpc GetLongURL(Hash) returns(LongURL){
     option (google.api.http) = {
-      get: "/v1/get_url"
+      get: "/{hash}"
     };
   }
 }
@@ -26,4 +26,8 @@ message LongURL{
 
 message ShortURL{
   string short_url = 1;
+}
+
+message Hash{
+  string hash = 1;
 }

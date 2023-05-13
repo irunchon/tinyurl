@@ -12,6 +12,7 @@ import (
 	pb "github.com/irunchon/tinyurl/pkg/tinyurl/api"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 	"log"
 	"net"
 	"net/http"
@@ -56,7 +57,10 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	go func() {
-		if err := runGatewayHTTPToGRPC(fmt.Sprintf("localhost:%s", httpPort)); err != nil {
+		if err := runGatewayHTTPToGRPC(fmt.Sprintf(
+			"localhost:%s", httpPort),
+			runtime.WithForwardResponseOption(responseHeaderMatcher), // middleware for redirect with HTTP code 302
+		); err != nil {
 			log.Fatalf("failed to serve: %v", err)
 		}
 	}()
@@ -66,29 +70,6 @@ func main() {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-
-	//strings := []string{
-	//	"@@@",
-	//	"!!!",
-	//	"$$$",
-	//	"+++",
-	//	"***",
-	//}
-	//
-	//for i := range strings {
-	//	err := repo.SetShortAndLongURLs(service.GenerateURL(), strings[i])
-	//	if err != nil {
-	//		fmt.Printf("*** %v ***\n", err)
-	//	}
-	//}
-	//fmt.Printf("%v\n", repo)
-	//val, err := repo.GetShortURLbyLong("!!!")
-	//fmt.Printf("get for !!!: %v %v\n", val, err)
-	//val, err = repo.GetShortURLbyLong("***")
-	//fmt.Printf("get for ***: %v %v\n", val, err)
-	//
-	//val, err = repo.GetLongURLbyShort("QLzinpjrTO")
-	//fmt.Printf("\nget long for QLzinpjrTO: %v %v\n", val, err)
 }
 
 func setConnectionToPostgresDB() (*sql.DB, error) {
@@ -115,4 +96,14 @@ func runGatewayHTTPToGRPC(httpServerAddress string, opts ...runtime.ServeMuxOpti
 		return err
 	}
 	return http.ListenAndServe(httpServerAddress, mux)
+}
+
+// For redirection if client use HTTP:
+func responseHeaderMatcher(_ context.Context, w http.ResponseWriter, _ proto.Message) error {
+	headers := w.Header()
+	if location, ok := headers["Grpc-Metadata-Location"]; ok {
+		w.Header().Set("Location", location[0])    // URL is stored in location[0])
+		w.WriteHeader(http.StatusMovedPermanently) // HTTP code 301
+	}
+	return nil
 }

@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ShortenURL_GetShortURLbyLong_FullMethodName = "/tinyurl.ShortenURL/GetShortURLbyLong"
-	ShortenURL_GetLongURLbyShort_FullMethodName = "/tinyurl.ShortenURL/GetLongURLbyShort"
+	ShortenURL_GetShortURL_FullMethodName = "/tinyurl.ShortenURL/GetShortURL"
+	ShortenURL_GetLongURL_FullMethodName  = "/tinyurl.ShortenURL/GetLongURL"
 )
 
 // ShortenURLClient is the client API for ShortenURL service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ShortenURLClient interface {
-	GetShortURLbyLong(ctx context.Context, in *LongURL, opts ...grpc.CallOption) (*ShortURL, error)
-	GetLongURLbyShort(ctx context.Context, in *ShortURL, opts ...grpc.CallOption) (*LongURL, error)
+	GetShortURL(ctx context.Context, in *LongURL, opts ...grpc.CallOption) (*ShortURL, error)
+	GetLongURL(ctx context.Context, in *Hash, opts ...grpc.CallOption) (*LongURL, error)
 }
 
 type shortenURLClient struct {
@@ -39,18 +39,18 @@ func NewShortenURLClient(cc grpc.ClientConnInterface) ShortenURLClient {
 	return &shortenURLClient{cc}
 }
 
-func (c *shortenURLClient) GetShortURLbyLong(ctx context.Context, in *LongURL, opts ...grpc.CallOption) (*ShortURL, error) {
+func (c *shortenURLClient) GetShortURL(ctx context.Context, in *LongURL, opts ...grpc.CallOption) (*ShortURL, error) {
 	out := new(ShortURL)
-	err := c.cc.Invoke(ctx, ShortenURL_GetShortURLbyLong_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, ShortenURL_GetShortURL_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *shortenURLClient) GetLongURLbyShort(ctx context.Context, in *ShortURL, opts ...grpc.CallOption) (*LongURL, error) {
+func (c *shortenURLClient) GetLongURL(ctx context.Context, in *Hash, opts ...grpc.CallOption) (*LongURL, error) {
 	out := new(LongURL)
-	err := c.cc.Invoke(ctx, ShortenURL_GetLongURLbyShort_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, ShortenURL_GetLongURL_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +61,8 @@ func (c *shortenURLClient) GetLongURLbyShort(ctx context.Context, in *ShortURL, 
 // All implementations must embed UnimplementedShortenURLServer
 // for forward compatibility
 type ShortenURLServer interface {
-	GetShortURLbyLong(context.Context, *LongURL) (*ShortURL, error)
-	GetLongURLbyShort(context.Context, *ShortURL) (*LongURL, error)
+	GetShortURL(context.Context, *LongURL) (*ShortURL, error)
+	GetLongURL(context.Context, *Hash) (*LongURL, error)
 	mustEmbedUnimplementedShortenURLServer()
 }
 
@@ -70,11 +70,11 @@ type ShortenURLServer interface {
 type UnimplementedShortenURLServer struct {
 }
 
-func (UnimplementedShortenURLServer) GetShortURLbyLong(context.Context, *LongURL) (*ShortURL, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetShortURLbyLong not implemented")
+func (UnimplementedShortenURLServer) GetShortURL(context.Context, *LongURL) (*ShortURL, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetShortURL not implemented")
 }
-func (UnimplementedShortenURLServer) GetLongURLbyShort(context.Context, *ShortURL) (*LongURL, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLongURLbyShort not implemented")
+func (UnimplementedShortenURLServer) GetLongURL(context.Context, *Hash) (*LongURL, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLongURL not implemented")
 }
 func (UnimplementedShortenURLServer) mustEmbedUnimplementedShortenURLServer() {}
 
@@ -89,38 +89,38 @@ func RegisterShortenURLServer(s grpc.ServiceRegistrar, srv ShortenURLServer) {
 	s.RegisterService(&ShortenURL_ServiceDesc, srv)
 }
 
-func _ShortenURL_GetShortURLbyLong_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ShortenURL_GetShortURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LongURL)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ShortenURLServer).GetShortURLbyLong(ctx, in)
+		return srv.(ShortenURLServer).GetShortURL(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ShortenURL_GetShortURLbyLong_FullMethodName,
+		FullMethod: ShortenURL_GetShortURL_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ShortenURLServer).GetShortURLbyLong(ctx, req.(*LongURL))
+		return srv.(ShortenURLServer).GetShortURL(ctx, req.(*LongURL))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ShortenURL_GetLongURLbyShort_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ShortURL)
+func _ShortenURL_GetLongURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Hash)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ShortenURLServer).GetLongURLbyShort(ctx, in)
+		return srv.(ShortenURLServer).GetLongURL(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ShortenURL_GetLongURLbyShort_FullMethodName,
+		FullMethod: ShortenURL_GetLongURL_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ShortenURLServer).GetLongURLbyShort(ctx, req.(*ShortURL))
+		return srv.(ShortenURLServer).GetLongURL(ctx, req.(*Hash))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -133,12 +133,12 @@ var ShortenURL_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ShortenURLServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetShortURLbyLong",
-			Handler:    _ShortenURL_GetShortURLbyLong_Handler,
+			MethodName: "GetShortURL",
+			Handler:    _ShortenURL_GetShortURL_Handler,
 		},
 		{
-			MethodName: "GetLongURLbyShort",
-			Handler:    _ShortenURL_GetLongURLbyShort_Handler,
+			MethodName: "GetLongURL",
+			Handler:    _ShortenURL_GetLongURL_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
