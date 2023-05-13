@@ -1,10 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/irunchon/tinyurl/internal/app"
-	"github.com/irunchon/tinyurl/internal/pkg/shortening"
 	"github.com/irunchon/tinyurl/internal/pkg/storage"
 	"github.com/irunchon/tinyurl/internal/pkg/storage/inmemory"
 	"github.com/irunchon/tinyurl/internal/pkg/storage/postgres"
@@ -13,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"net/http"
 	"os"
 )
 
@@ -24,6 +26,7 @@ const (
 	password = "test"
 	dbname   = "urls_db"
 	grpcPort = "50051"
+	httpPort = "8080"
 )
 
 // TODO: error processing
@@ -46,15 +49,19 @@ func main() {
 		return
 	}
 
-	service := shortening.NewService(repo)
-
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", grpcPort))
 	if err != nil {
 		panic(err)
 	}
 	grpcServer := grpc.NewServer()
 
-	pb.RegisterShortenURLServer(grpcServer, &app.Server{})
+	go func() {
+		if err := runGatewayHTTPToGRPC(fmt.Sprintf("localhost:%s", httpPort)); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	pb.RegisterShortenURLServer(grpcServer, app.New(repo))
 	log.Printf("server listening at %v", listener.Addr())
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
@@ -95,4 +102,17 @@ func setConnectionToPostgresDB() (*sql.DB, error) {
 	}
 	err = db.Ping()
 	return db, err
+}
+
+func runGatewayHTTPToGRPC(httpServerAddress string, opts ...runtime.ServeMuxOption) error {
+	ctx := context.Background()
+
+	mux := runtime.NewServeMux(opts...)
+
+	dialOpts := []grpc.DialOption{grpc.WithInsecure()}
+	err := pb.RegisterShortenURLHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%s", grpcPort), dialOpts)
+	if err != nil {
+		return err
+	}
+	return http.ListenAndServe(httpServerAddress, mux)
 }

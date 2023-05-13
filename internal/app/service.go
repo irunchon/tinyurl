@@ -8,18 +8,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// TODO: rename to service ???
-type Server struct {
+// TODO: rename to service
+type Service struct {
 	pb.UnimplementedShortenURLServer
 	repo storage.Storage
 }
 
-func New(repo storage.Storage) *Server {
+func New(repo storage.Storage) *Service {
 	// TODO: explain UnimplementedShortenURLServer
-	return &Server{repo: repo}
+	return &Service{repo: repo}
 }
 
-func (s Server) GetShortURLbyLong(_ context.Context, url *pb.LongURL) (*pb.ShortURL, error) {
+func (s Service) GetShortURLbyLong(_ context.Context, url *pb.LongURL) (*pb.ShortURL, error) {
 	// TODO: check if URL is real
 	// TODO: retrun error to user if it's not URL
 	// TODO: generate short URL
@@ -36,7 +36,7 @@ func (s Server) GetShortURLbyLong(_ context.Context, url *pb.LongURL) (*pb.Short
 
 	return nil, status.Errorf(codes.Unimplemented, "method GetShortURLbyLong not implemented")
 }
-func (s Server) GetLongURLbyShort(_ context.Context, url *pb.ShortURL) (*pb.LongURL, error) {
+func (s Service) GetLongURLbyShort(_ context.Context, url *pb.ShortURL) (*pb.LongURL, error) {
 	// TODO: check if URL is real
 	// TODO: check if short URL is in repo
 	// TODO: if no return error to client
