@@ -32,11 +32,17 @@ func (s Service) GetShortURL(_ context.Context, request *pb.LongURL) (*pb.ShortU
 
 	hash := shortening.GenerateHashForURL(request.LongUrl)
 	isHashOK := false
-	// TODO: redo shortening algorithm
 	for i := 0; i < len(hash)-1; i++ {
-		if _, err := s.repo.GetLongURLbyShort(hash); err != nil {
+		urlToCheck, err := s.repo.GetLongURLbyShort(hash)
+		if err == storage.ErrNotFound {
 			isHashOK = true
 			break
+		}
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "fail to check hash for duplications")
+		}
+		if urlToCheck == request.LongUrl {
+			return &pb.ShortURL{ShortUrl: hash}, nil
 		}
 		hash = hashRingShift(hash)
 	}
