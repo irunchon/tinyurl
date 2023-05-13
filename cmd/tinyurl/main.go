@@ -19,7 +19,7 @@ import (
 	"os"
 )
 
-// TODO: port -> env
+// TODO: port, etc. -> env
 const (
 	host     = "localhost"
 	port     = 5432
@@ -31,6 +31,7 @@ const (
 )
 
 // TODO: error processing
+
 func main() {
 	storageType := os.Getenv("STORAGE_TYPE")
 	var repo storage.Storage

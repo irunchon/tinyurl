@@ -12,6 +12,8 @@ import (
 	"net/url"
 )
 
+// TODO: check errors and return them to user (if any)
+
 type Service struct {
 	pb.UnimplementedShortenURLServer
 	repo storage.Storage
@@ -24,21 +26,24 @@ func New(repo storage.Storage) *Service {
 
 // GetShortURL == HTTP POST method
 func (s Service) GetShortURL(_ context.Context, request *pb.LongURL) (*pb.ShortURL, error) {
-	// TODO: check errors and return them to user (if any)
-
 	if !IsUrl(request.LongUrl) {
-		// TODO: return error to user if it's not URL
 		return nil, status.Errorf(codes.InvalidArgument, "requested URL is not valid")
 	}
 
-	var hash string
+	hash := shortening.GenerateHashForURL(request.LongUrl)
+	isHashOK := false
 	// TODO: redo shortening algorithm
-	for {
-		hash = shortening.GenerateURL()
+	for i := 0; i < len(hash)-1; i++ {
 		if _, err := s.repo.GetLongURLbyShort(hash); err != nil {
+			isHashOK = true
 			break
 		}
+		hash = hashRingShift(hash)
 	}
+	if !isHashOK {
+		return nil, status.Errorf(codes.Internal, "fail to generate hash")
+	}
+
 	err := s.repo.SetShortAndLongURLs(hash, request.LongUrl)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to add hash and long URL to repository")
@@ -72,4 +77,8 @@ func IsUrl(str string) bool {
 func IsHashValid(hash string) bool {
 	// TODO: check symbols on validity
 	return len(hash) == shortening.ShortURLLength
+}
+
+func hashRingShift(hash string) string {
+	return hash[1:] + hash[:1]
 }

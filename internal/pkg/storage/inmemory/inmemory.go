@@ -1,11 +1,9 @@
 package inmemory
 
 import (
-	"errors"
+	"github.com/irunchon/tinyurl/internal/pkg/storage"
 	"sync"
 )
-
-var ErrNotFound = errors.New("not found")
 
 type Storage struct {
 	keyShortURL map[string]string
@@ -20,24 +18,13 @@ func NewInMemoryStorage() *Storage {
 	}
 }
 
-func (s *Storage) GetShortURLbyLong(longURL string) (string, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	value, isFound := s.keyLongURL[longURL]
-	if !isFound {
-		return "", ErrNotFound
-	}
-	return value, nil
-}
-
 func (s *Storage) GetLongURLbyShort(shortURL string) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	value, isFound := s.keyShortURL[shortURL]
 	if !isFound {
-		return "", ErrNotFound
+		return "", storage.ErrNotFound
 	}
 	return value, nil
 }
