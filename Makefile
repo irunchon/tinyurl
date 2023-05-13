@@ -5,7 +5,7 @@ MIGRATIONS_DIR=internal/pkg/db/migrations
 POSTGRES_CONNECT_STRING="host=localhost user=test password=test dbname=urls_db sslmode=disable"
 
 .PHONY: all
-all:
+all: goose-up
 	go run cmd/tinyurl/main.go
 
 .PHONY: compose-up

@@ -12,15 +12,13 @@ import (
 	"net/url"
 )
 
-// TODO: check errors and return them to user (if any)
-
 type Service struct {
+	// TODO: explain UnimplementedShortenURLServer
 	pb.UnimplementedShortenURLServer
 	repo storage.Storage
 }
 
 func New(repo storage.Storage) *Service {
-	// TODO: explain UnimplementedShortenURLServer
 	return &Service{repo: repo}
 }
 
@@ -54,7 +52,6 @@ func (s Service) GetShortURL(_ context.Context, request *pb.LongURL) (*pb.ShortU
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to add hash and long URL to repository")
 	}
-	// TODO: check repo behaviour if there are no entities
 	return &pb.ShortURL{ShortUrl: hash}, nil
 }
 
@@ -64,13 +61,18 @@ func (s Service) GetLongURL(ctx context.Context, request *pb.Hash) (*pb.LongURL,
 		return nil, status.Errorf(codes.InvalidArgument, "requested URL is not valid")
 	}
 
-	// TODO: process DB errors
 	longURL, err := s.repo.GetLongURLbyShort(request.Hash)
-	if err != nil {
+	if err == storage.ErrNotFound {
 		return nil, status.Errorf(codes.NotFound, "long URL is not found in repository")
 	}
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "fail to get long URL from repository")
+	}
 	header := metadata.Pairs("Location", longURL)
-	grpc.SendHeader(ctx, header)
+	err = grpc.SendHeader(ctx, header)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "fail to send redirect")
+	}
 
 	return &pb.LongURL{LongUrl: longURL}, nil
 }
