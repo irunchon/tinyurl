@@ -24,9 +24,29 @@ func TestGetShortURL(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "requested URL is not valid")
 	})
+	t.Run("Hash already exists in repo", func(t *testing.T) {
+		testService := New(inmemory.NewInMemoryStorage())
+		url := "https://go.dev/play/"
+		expectedHash := "E3puYxWn1Q"
+		testService.repo.SetShortAndLongURLs(expectedHash, url)
+		request := &pb.LongURL{LongUrl: url}
 
-	//t.Run("", func(t *testing.T) {})
-	//t.Run("", func(t *testing.T) {})
+		actual, err := testService.GetShortURL(ctx, request)
+
+		require.Nil(t, err)
+		assert.Equal(t, expectedHash, actual.ShortUrl)
+	})
+	t.Run("", func(t *testing.T) {
+		testService := New(inmemory.NewInMemoryStorage())
+		url := "https://github.com/"
+		expectedHash := "R2oCwKKhF6"
+		request := &pb.LongURL{LongUrl: url}
+
+		actual, err := testService.GetShortURL(ctx, request)
+
+		require.Nil(t, err)
+		assert.Equal(t, expectedHash, actual.ShortUrl)
+	})
 }
 
 func TestIsUrl(t *testing.T) {
@@ -90,6 +110,46 @@ func TestIsUrl(t *testing.T) {
 			assert.Equal(t, tc.expected, IsUrl(tc.str))
 		})
 	}
+}
+
+func TestGenerateUniqueHashForURL(t *testing.T) {
+	t.Run("Hash not found in repo", func(t *testing.T) {
+		testService := New(inmemory.NewInMemoryStorage())
+
+		actual, err := testService.generateUniqueHashForURL("test")
+
+		assert.Nil(t, err)
+		assert.Equal(t, "O1CYK5Hql0", actual)
+	})
+
+	t.Run("Hash already exists in repo", func(t *testing.T) {
+		testService := New(inmemory.NewInMemoryStorage())
+		testService.repo.SetShortAndLongURLs("O1CYK5Hql0", "test")
+
+		actual, err := testService.generateUniqueHashForURL("test")
+
+		assert.Equal(t, "O1CYK5Hql0", actual)
+		assert.Equal(t, errorAlreadyExists, err)
+	})
+	t.Run("Hash shifting doesn't help", func(t *testing.T) {
+		testService := New(inmemory.NewInMemoryStorage())
+		testService.repo.SetShortAndLongURLs("O1CYK5Hql0", "test0")
+		testService.repo.SetShortAndLongURLs("1CYK5Hql0O", "test1")
+		testService.repo.SetShortAndLongURLs("CYK5Hql0O1", "test2")
+		testService.repo.SetShortAndLongURLs("YK5Hql0O1C", "test3")
+		testService.repo.SetShortAndLongURLs("K5Hql0O1CY", "test4")
+		testService.repo.SetShortAndLongURLs("5Hql0O1CYK", "test5")
+		testService.repo.SetShortAndLongURLs("Hql0O1CYK5", "test6")
+		testService.repo.SetShortAndLongURLs("ql0O1CYK5H", "test7")
+		testService.repo.SetShortAndLongURLs("l0O1CYK5Hq", "test8")
+		testService.repo.SetShortAndLongURLs("0O1CYK5Hql", "test9")
+
+		actual, err := testService.generateUniqueHashForURL("test")
+
+		assert.Equal(t, "", actual)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "fail to generate hash")
+	})
 }
 
 func TestHashRingShift(t *testing.T) {

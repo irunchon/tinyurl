@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"net/url"
 
 	"github.com/irunchon/tinyurl/internal/pkg/shortening"
@@ -11,42 +12,53 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var errorAlreadyExists = errors.New("pair URL-hash already exists in repo")
+
 // GetShortURL generates short URL (hash) by long URL (example - HTTP POST method)
+// TODO: logging errors
+// TODO: mock tests for errors in repo
 func (s Service) GetShortURL(_ context.Context, request *pb.LongURL) (*pb.ShortURL, error) {
 	if !IsUrl(request.LongUrl) {
 		return nil, status.Errorf(codes.InvalidArgument, "requested URL is not valid")
 	}
-	// TODO: separate func
-	hash := shortening.GenerateHashForURL(request.LongUrl)
-	isHashOK := false
-	for i := 0; i < len(hash)-1; i++ {
-		urlToCheck, err := s.repo.GetLongURLbyShort(hash)
-		if err == storage.ErrNotFound {
-			isHashOK = true
-			break
-		}
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "fail to check hash for duplications")
-		}
-		if urlToCheck == request.LongUrl {
-			return &pb.ShortURL{ShortUrl: hash}, nil
-		}
-		hash = hashRingShift(hash)
+
+	hash, err := s.generateUniqueHashForURL(request.LongUrl)
+	if err == errorAlreadyExists {
+		return &pb.ShortURL{ShortUrl: hash}, nil
 	}
-	if !isHashOK {
-		return nil, status.Errorf(codes.Internal, "fail to generate hash")
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	// end of func
-	err := s.repo.SetShortAndLongURLs(hash, request.LongUrl)
+
+	err = s.repo.SetShortAndLongURLs(hash, request.LongUrl)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to add hash and long URL to repository")
 	}
 	return &pb.ShortURL{ShortUrl: hash}, nil
 }
 
-func IsUrl(str string) bool {
-	u, err := url.Parse(str)
+func IsUrl(stringToCheck string) bool {
+	u, err := url.Parse(stringToCheck)
 	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
+func (s Service) generateUniqueHashForURL(longURL string) (string, error) {
+	hash := shortening.GenerateHashForURL(longURL)
+
+	for i := 0; i < len(hash)-1; i++ {
+		urlToCheck, err := s.repo.GetLongURLbyShort(hash)
+		if err == storage.ErrNotFound {
+			return hash, nil
+		}
+		if err != nil {
+			return "", errors.New("fail to check hash for duplications")
+		}
+		if urlToCheck == longURL {
+			return hash, errorAlreadyExists
+		}
+		hash = hashRingShift(hash)
+	}
+	return "", errors.New("fail to generate hash")
 }
 
 func hashRingShift(hash string) string {
