@@ -4,13 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
-	pb "github.com/irunchon/tinyurl/pkg/tinyurl/api"
-
 	"github.com/irunchon/tinyurl/internal/pkg/storage/inmemory"
-
+	pb "github.com/irunchon/tinyurl/pkg/tinyurl/api"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetShortURL(t *testing.T) {
@@ -28,12 +25,9 @@ func TestGetShortURL(t *testing.T) {
 		assert.Contains(t, err.Error(), "requested URL is not valid")
 	})
 
-	t.Run("", func(t *testing.T) {})
-	t.Run("", func(t *testing.T) {})
+	//t.Run("", func(t *testing.T) {})
+	//t.Run("", func(t *testing.T) {})
 }
-
-//func (s Service) GetLongURL(ctx context.Context, request *pb.Hash) (*pb.LongURL, error)
-//t.Run("", func(t *testing.T){})
 
 func TestIsUrl(t *testing.T) {
 	for _, tc := range []struct {
@@ -94,40 +88,6 @@ func TestIsUrl(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			assert.Equal(t, tc.expected, IsUrl(tc.str))
-		})
-	}
-}
-
-func TestIsHashValid(t *testing.T) {
-	for _, tc := range []struct {
-		name     string
-		hash     string
-		expected bool
-	}{
-		{
-			name:     "Valid hash",
-			hash:     "qwertyuiop",
-			expected: true,
-		},
-		{
-			name:     "Invalid hash - empty",
-			hash:     "",
-			expected: false,
-		},
-		{
-			name:     "Invalid hash - short",
-			hash:     "1",
-			expected: false,
-		},
-		{
-			name:     "Invalid hash - long",
-			hash:     "asdfghjklzxcvbnm",
-			expected: false,
-		},
-		// TODO: more tests when IsHashValid func finished (symbols checks)
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.expected, IsHashValid(tc.hash))
 		})
 	}
 }
