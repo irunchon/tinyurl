@@ -24,7 +24,7 @@ func (s Service) GetLongURL(ctx context.Context, request *pb.GetLongURLRequest) 
 		return nil, status.Errorf(codes.Internal, "fail to get long URL from repository")
 	}
 
-	return &pb.GetLongURLResponse{FullUrl: longURL}, nil
+	return &pb.GetLongURLResponse{LongUrl: longURL}, nil
 }
 
 func isHashValid(hash string) bool {

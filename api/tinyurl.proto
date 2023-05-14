@@ -33,5 +33,5 @@ message GetLongURLRequest{
 }
 
 message GetLongURLResponse{
-  string full_url = 1;
+  string long_url = 1;
 }

@@ -46,7 +46,7 @@ func TestGetLongURL(t *testing.T) {
 		actual, err := testService.GetLongURL(ctx, request)
 
 		require.Nil(t, err)
-		assert.Equal(t, expectedURL, actual.FullUrl)
+		assert.Equal(t, expectedURL, actual.LongUrl)
 	})
 }
 

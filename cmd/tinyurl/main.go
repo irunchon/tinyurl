@@ -103,7 +103,7 @@ func runGatewayHTTPToGRPC(httpServerAddress string, opts ...runtime.ServeMuxOpti
 // For redirection if client use HTTP:
 func responseHeaderMatcher(_ context.Context, w http.ResponseWriter, grpcResponse proto.Message) error {
 	if v, ok := grpcResponse.(*pb.GetLongURLResponse); ok {
-		w.Header().Set("Location", v.FullUrl)
+		w.Header().Set("Location", v.LongUrl)
 		w.WriteHeader(http.StatusMovedPermanently)
 	}
 	return nil
