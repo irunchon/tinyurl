@@ -14,7 +14,7 @@ import (
 
 // GetLongURL searches long URL by hash in storage (example - HTTP GET method)
 func (s Service) GetLongURL(ctx context.Context, request *pb.Hash) (*pb.LongURL, error) {
-	if !IsHashValid(request.Hash) {
+	if !isHashValid(request.Hash) {
 		return nil, status.Errorf(codes.InvalidArgument, "requested URL is not valid")
 	}
 
@@ -34,7 +34,7 @@ func (s Service) GetLongURL(ctx context.Context, request *pb.Hash) (*pb.LongURL,
 	return &pb.LongURL{LongUrl: longURL}, nil
 }
 
-func IsHashValid(hash string) bool {
+func isHashValid(hash string) bool {
 	// TODO: check symbols on validity
 	return len(hash) == shortening.ShortURLLength
 }

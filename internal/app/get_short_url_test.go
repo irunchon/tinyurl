@@ -13,7 +13,7 @@ import (
 func TestGetShortURL(t *testing.T) {
 	var ctx = context.Background()
 
-	t.Run("Hash for wrong URL", func(t *testing.T) {
+	t.Run("Error - wrong URL", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		url := ""
 		request := &pb.LongURL{LongUrl: url}
@@ -24,7 +24,7 @@ func TestGetShortURL(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "requested URL is not valid")
 	})
-	t.Run("Hash already exists in repo", func(t *testing.T) {
+	t.Run("OK - hash already exists in repo", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		url := "https://go.dev/play/"
 		expectedHash := "E3puYxWn1Q"
@@ -36,7 +36,7 @@ func TestGetShortURL(t *testing.T) {
 		require.Nil(t, err)
 		assert.Equal(t, expectedHash, actual.ShortUrl)
 	})
-	t.Run("", func(t *testing.T) {
+	t.Run("OK - new hash generated", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		url := "https://github.com/"
 		expectedHash := "R2oCwKKhF6"
