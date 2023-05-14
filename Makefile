@@ -1,6 +1,9 @@
 include .env
 export
 
+GRPC_PORT=50051
+HTTP_PORT=8080
+
 MIGRATIONS_DIR=internal/pkg/db/migrations
 POSTGRES_CONNECT_STRING="host=localhost user=test password=test dbname=urls_db sslmode=disable"
 
@@ -34,7 +37,7 @@ docker-build:
 
 .PHONY: docker-run
 docker-run:
-	docker run -p 8080:8080 tinyurl
+	docker run -p $(HTTP_PORT):$(HTTP_PORT) -p $(GRPC_PORT):$(GRPC_PORT) tinyurl
 
 .PHONY: goose-status
 goose-status:
