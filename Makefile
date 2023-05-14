@@ -10,7 +10,7 @@ all: goose-up
 
 .PHONY: test
 test:
-	go test ./internal/...
+	go test -v ./internal/...
 
 .PHONY: test-race
 test-race:

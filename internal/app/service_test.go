@@ -1,10 +1,39 @@
 package app
 
 import (
+	"context"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	pb "github.com/irunchon/tinyurl/pkg/tinyurl/api"
+
+	"github.com/irunchon/tinyurl/internal/pkg/storage/inmemory"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestGetShortURL(t *testing.T) {
+	var ctx = context.Background()
+
+	t.Run("Hash for wrong URL", func(t *testing.T) {
+		testService := New(inmemory.NewInMemoryStorage())
+		url := ""
+		request := &pb.LongURL{LongUrl: url}
+
+		actual, err := testService.GetShortURL(ctx, request)
+
+		assert.Nil(t, actual)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "requested URL is not valid")
+	})
+
+	t.Run("", func(t *testing.T) {})
+	t.Run("", func(t *testing.T) {})
+}
+
+//func (s Service) GetLongURL(ctx context.Context, request *pb.Hash) (*pb.LongURL, error)
+//t.Run("", func(t *testing.T){})
 
 func TestIsUrl(t *testing.T) {
 	for _, tc := range []struct {

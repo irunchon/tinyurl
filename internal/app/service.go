@@ -22,7 +22,7 @@ func New(repo storage.Storage) *Service {
 	return &Service{repo: repo}
 }
 
-// GetShortURL == HTTP POST method
+// GetShortURL generates short URL (hash) by long URL (example - HTTP POST method)
 func (s Service) GetShortURL(_ context.Context, request *pb.LongURL) (*pb.ShortURL, error) {
 	if !IsUrl(request.LongUrl) {
 		return nil, status.Errorf(codes.InvalidArgument, "requested URL is not valid")
@@ -55,7 +55,7 @@ func (s Service) GetShortURL(_ context.Context, request *pb.LongURL) (*pb.ShortU
 	return &pb.ShortURL{ShortUrl: hash}, nil
 }
 
-// GetLongURL == HTTP GET method
+// GetLongURL searches long URL by hash in storage (example - HTTP GET method)
 func (s Service) GetLongURL(ctx context.Context, request *pb.Hash) (*pb.LongURL, error) {
 	if !IsHashValid(request.Hash) {
 		return nil, status.Errorf(codes.InvalidArgument, "requested URL is not valid")
