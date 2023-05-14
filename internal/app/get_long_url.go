@@ -6,14 +6,12 @@ import (
 	"github.com/irunchon/tinyurl/internal/pkg/shortening"
 	"github.com/irunchon/tinyurl/internal/pkg/storage"
 	pb "github.com/irunchon/tinyurl/pkg/tinyurl/api"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
 // GetLongURL searches long URL by hash in storage (example - HTTP GET method)
-func (s Service) GetLongURL(ctx context.Context, request *pb.Hash) (*pb.LongURL, error) {
+func (s Service) GetLongURL(ctx context.Context, request *pb.GetLongURLRequest) (*pb.GetLongURLResponse, error) {
 	if !isHashValid(request.Hash) {
 		return nil, status.Errorf(codes.InvalidArgument, "requested URL is not valid")
 	}
@@ -25,13 +23,8 @@ func (s Service) GetLongURL(ctx context.Context, request *pb.Hash) (*pb.LongURL,
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to get long URL from repository")
 	}
-	header := metadata.Pairs("Location", longURL)
-	err = grpc.SendHeader(ctx, header)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "fail to send redirect")
-	}
 
-	return &pb.LongURL{LongUrl: longURL}, nil
+	return &pb.GetLongURLResponse{FullUrl: longURL}, nil
 }
 
 func isHashValid(hash string) bool {

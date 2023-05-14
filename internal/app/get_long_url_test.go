@@ -17,7 +17,7 @@ func TestGetLongURL(t *testing.T) {
 	t.Run("Error - wrong hash", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		hash := "1"
-		request := &pb.Hash{Hash: hash}
+		request := &pb.GetLongURLRequest{Hash: hash}
 
 		actual, err := testService.GetLongURL(ctx, request)
 
@@ -28,7 +28,7 @@ func TestGetLongURL(t *testing.T) {
 	t.Run("Error - URL not found in repo", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		hash := "1234567890"
-		request := &pb.Hash{Hash: hash}
+		request := &pb.GetLongURLRequest{Hash: hash}
 
 		actual, err := testService.GetLongURL(ctx, request)
 
@@ -41,13 +41,12 @@ func TestGetLongURL(t *testing.T) {
 		expectedURL := "https://go.dev/play/"
 		hash := "E3puYxWn1Q"
 		_ = testService.repo.SetShortAndLongURLs(hash, expectedURL)
-		request := &pb.Hash{Hash: hash}
+		request := &pb.GetLongURLRequest{Hash: hash}
 
 		actual, err := testService.GetLongURL(ctx, request)
 
-		//require.Nil(t, err)
-		assert.Equal(t, "", err.Error())
-		assert.Equal(t, expectedURL, actual.LongUrl)
+		require.Nil(t, err)
+		assert.Equal(t, expectedURL, actual.FullUrl)
 	})
 }
 

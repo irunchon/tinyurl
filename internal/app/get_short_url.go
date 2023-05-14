@@ -17,14 +17,14 @@ var errorAlreadyExists = errors.New("pair URL-hash already exists in repo")
 // GetShortURL generates short URL (hash) by long URL (example - HTTP POST method)
 // TODO: logging errors
 // TODO: mock tests for errors in repo
-func (s Service) GetShortURL(_ context.Context, request *pb.LongURL) (*pb.ShortURL, error) {
+func (s Service) GetShortURL(_ context.Context, request *pb.GetShortURLRequest) (*pb.GetShortURLResponse, error) {
 	if !IsUrl(request.LongUrl) {
 		return nil, status.Errorf(codes.InvalidArgument, "requested URL is not valid")
 	}
 
 	hash, err := s.generateUniqueHashForURL(request.LongUrl)
 	if err == errorAlreadyExists {
-		return &pb.ShortURL{ShortUrl: hash}, nil
+		return &pb.GetShortURLResponse{ShortUrl: hash}, nil
 	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -34,7 +34,7 @@ func (s Service) GetShortURL(_ context.Context, request *pb.LongURL) (*pb.ShortU
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to add hash and long URL to repository")
 	}
-	return &pb.ShortURL{ShortUrl: hash}, nil
+	return &pb.GetShortURLResponse{ShortUrl: hash}, nil
 }
 
 func IsUrl(stringToCheck string) bool {

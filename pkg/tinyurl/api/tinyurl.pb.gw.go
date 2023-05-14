@@ -32,7 +32,7 @@ var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
 func request_ShortenURL_GetShortURL_0(ctx context.Context, marshaler runtime.Marshaler, client ShortenURLClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq LongURL
+	var protoReq GetShortURLRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -49,7 +49,7 @@ func request_ShortenURL_GetShortURL_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func local_request_ShortenURL_GetShortURL_0(ctx context.Context, marshaler runtime.Marshaler, server ShortenURLServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq LongURL
+	var protoReq GetShortURLRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -66,7 +66,7 @@ func local_request_ShortenURL_GetShortURL_0(ctx context.Context, marshaler runti
 }
 
 func request_ShortenURL_GetLongURL_0(ctx context.Context, marshaler runtime.Marshaler, client ShortenURLClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+	var protoReq GetLongURLRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -92,7 +92,7 @@ func request_ShortenURL_GetLongURL_0(ctx context.Context, marshaler runtime.Mars
 }
 
 func local_request_ShortenURL_GetLongURL_0(ctx context.Context, marshaler runtime.Marshaler, server ShortenURLServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+	var protoReq GetLongURLRequest
 	var metadata runtime.ServerMetadata
 
 	var (

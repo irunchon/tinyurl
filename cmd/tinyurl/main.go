@@ -4,6 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"os"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/irunchon/tinyurl/internal/app"
 	"github.com/irunchon/tinyurl/internal/pkg/storage"
@@ -13,10 +18,6 @@ import (
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
-	"log"
-	"net"
-	"net/http"
-	"os"
 )
 
 // TODO: port, etc. -> env
@@ -100,11 +101,10 @@ func runGatewayHTTPToGRPC(httpServerAddress string, opts ...runtime.ServeMuxOpti
 }
 
 // For redirection if client use HTTP:
-func responseHeaderMatcher(_ context.Context, w http.ResponseWriter, _ proto.Message) error {
-	headers := w.Header()
-	if location, ok := headers["Grpc-Metadata-Location"]; ok {
-		w.Header().Set("Location", location[0])    // URL is stored in location[0])
-		w.WriteHeader(http.StatusMovedPermanently) // HTTP code 301
+func responseHeaderMatcher(_ context.Context, w http.ResponseWriter, grpcResponse proto.Message) error {
+	if v, ok := grpcResponse.(*pb.GetLongURLResponse); ok {
+		w.Header().Set("Location", v.FullUrl)
+		w.WriteHeader(http.StatusMovedPermanently)
 	}
 	return nil
 }

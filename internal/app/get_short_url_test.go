@@ -16,7 +16,7 @@ func TestGetShortURL(t *testing.T) {
 	t.Run("Error - wrong URL", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		url := ""
-		request := &pb.LongURL{LongUrl: url}
+		request := &pb.GetShortURLRequest{LongUrl: url}
 
 		actual, err := testService.GetShortURL(ctx, request)
 
@@ -29,7 +29,7 @@ func TestGetShortURL(t *testing.T) {
 		url := "https://go.dev/play/"
 		expectedHash := "E3puYxWn1Q"
 		testService.repo.SetShortAndLongURLs(expectedHash, url)
-		request := &pb.LongURL{LongUrl: url}
+		request := &pb.GetShortURLRequest{LongUrl: url}
 
 		actual, err := testService.GetShortURL(ctx, request)
 
@@ -40,7 +40,7 @@ func TestGetShortURL(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		url := "https://github.com/"
 		expectedHash := "R2oCwKKhF6"
-		request := &pb.LongURL{LongUrl: url}
+		request := &pb.GetShortURLRequest{LongUrl: url}
 
 		actual, err := testService.GetShortURL(ctx, request)
 
