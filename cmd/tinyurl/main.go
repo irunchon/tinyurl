@@ -27,8 +27,8 @@ const (
 	user     = "test"
 	password = "test"
 	dbname   = "urls_db"
-	grpcPort = "50051"
-	httpPort = "8080"
+	grpcPort = 50051
+	httpPort = 8080
 )
 
 // TODO: error processing
@@ -52,23 +52,23 @@ func main() {
 		return
 	}
 
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", grpcPort))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		panic(err)
 	}
 	grpcServer := grpc.NewServer()
 
 	go func() {
-		if err := runGatewayHTTPToGRPC(fmt.Sprintf(
-			"localhost:%s", httpPort),
-			runtime.WithForwardResponseOption(responseHeaderMatcher), // middleware for redirect with HTTP code 302
+		if err := runGatewayHTTPToGRPC(
+			httpPort,
+			runtime.WithForwardResponseOption(responseHeaderMatcher), // middleware for redirect with HTTP code 301
 		); err != nil {
 			log.Fatalf("failed to serve: %v", err)
 		}
 	}()
 
 	pb.RegisterShortenURLServer(grpcServer, app.New(repo))
-	log.Printf("server listening at %v", listener.Addr())
+	log.Printf("GRPC server listening at port %d", grpcPort)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
@@ -87,17 +87,19 @@ func setConnectionToPostgresDB() (*sql.DB, error) {
 	return db, err
 }
 
-func runGatewayHTTPToGRPC(httpServerAddress string, opts ...runtime.ServeMuxOption) error {
+func runGatewayHTTPToGRPC(serverPort int, opts ...runtime.ServeMuxOption) error {
 	ctx := context.Background()
 
 	mux := runtime.NewServeMux(opts...)
 
 	dialOpts := []grpc.DialOption{grpc.WithInsecure()}
-	err := pb.RegisterShortenURLHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%s", grpcPort), dialOpts)
+	err := pb.RegisterShortenURLHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), dialOpts)
 	if err != nil {
 		return err
 	}
-	return http.ListenAndServe(httpServerAddress, mux)
+
+	log.Printf("HTTP server listening at port %d", serverPort)
+	return http.ListenAndServe(fmt.Sprintf(":%d", serverPort), mux)
 }
 
 // For redirection if client use HTTP:
