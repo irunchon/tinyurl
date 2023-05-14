@@ -8,6 +8,18 @@ POSTGRES_CONNECT_STRING="host=localhost user=test password=test dbname=urls_db s
 all: goose-up
 	go run cmd/tinyurl/main.go
 
+.PHONY: test
+test:
+	go test ./internal/...
+
+.PHONY: test-race
+test-race:
+	go test ./internal/... -race
+
+.PHONY: test-coverage
+test-coverage:
+	go test ./internal/... -coverprofile=coverage.out  && go tool cover -html=coverage.out
+
 .PHONY: compose-up
 compose-up:
 	docker-compose -p db -f ./build/docker-compose.yml up -d

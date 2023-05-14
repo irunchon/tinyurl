@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/irunchon/tinyurl/internal/pkg/shortening"
 	"github.com/irunchon/tinyurl/internal/pkg/storage"
 	pb "github.com/irunchon/tinyurl/pkg/tinyurl/api"
@@ -9,11 +11,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"net/url"
 )
 
 type Service struct {
-	// TODO: explain UnimplementedShortenURLServer
 	pb.UnimplementedShortenURLServer
 	repo storage.Storage
 }
