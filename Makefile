@@ -28,6 +28,14 @@ compose-up:
 compose-rm:
 	docker-compose -p db -f ./build/docker-compose.yml rm -fvs
 
+.PHONY: docker-build
+docker-build:
+	docker build -t tinyurl .
+
+.PHONY: docker-run
+docker-run:
+	docker run -p 8080:8080 tinyurl
+
 .PHONY: goose-status
 goose-status:
 	goose -dir $(MIGRATIONS_DIR) postgres $(POSTGRES_CONNECT_STRING) status
