@@ -3,7 +3,6 @@ package shortening
 import (
 	"crypto/md5"
 	"math/big"
-	"math/rand"
 )
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
@@ -30,13 +29,4 @@ func decimalNumberConversionToBaseNNumbers(num, base uint64) []uint64 {
 		result = append(result, num%base)
 	}
 	return result
-}
-
-// GenerateRandomHashForURL makes random hash independent of long URL (UNUSED)
-func GenerateRandomHashForURL() string {
-	shortURL := make([]rune, ShortURLLength)
-	for i := 0; i < ShortURLLength; i++ {
-		shortURL[i] = rune(alphabet[rand.Intn(len(alphabet)-1)])
-	}
-	return string(shortURL)
 }
