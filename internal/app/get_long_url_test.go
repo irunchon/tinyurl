@@ -57,8 +57,18 @@ func TestIsHashValid(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:     "Valid hash",
+			name:     "Valid hash - only letters",
 			hash:     "qwertyuiop",
+			expected: true,
+		},
+		{
+			name:     "Valid hash with digits",
+			hash:     "Qwer5_ui90",
+			expected: true,
+		},
+		{
+			name:     "Valid hash - only underscore",
+			hash:     "__________",
 			expected: true,
 		},
 		{
@@ -76,7 +86,16 @@ func TestIsHashValid(t *testing.T) {
 			hash:     "asdfghjklzxcvbnm",
 			expected: false,
 		},
-		// TODO: more tests when isHashValid func finished (symbols check)
+		{
+			name:     "Invalid symbols in hash",
+			hash:     "123456789$",
+			expected: false,
+		},
+		{
+			name:     "Invalid letters in hash",
+			hash:     "йцукенгшщз",
+			expected: false,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			assert.Equal(t, tc.expected, isHashValid(tc.hash))

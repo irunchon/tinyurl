@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/irunchon/tinyurl/internal/pkg/shortening"
 	"github.com/irunchon/tinyurl/internal/pkg/storage"
@@ -28,6 +29,5 @@ func (s Service) GetLongURL(ctx context.Context, request *pb.GetLongURLRequest) 
 }
 
 func isHashValid(hash string) bool {
-	// TODO: check symbols on validity
-	return len(hash) == shortening.ShortURLLength
+	return len(hash) == shortening.ShortURLLength && regexp.MustCompile(`^[a-zA-Z0-9_]+$`).MatchString(hash)
 }
