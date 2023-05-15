@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var regexValidHashChars = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+
 // GetLongURL searches long URL by hash in storage (example - HTTP GET method)
 func (s Service) GetLongURL(ctx context.Context, request *pb.GetLongURLRequest) (*pb.GetLongURLResponse, error) {
 	if !isHashValid(request.Hash) {
@@ -29,5 +31,5 @@ func (s Service) GetLongURL(ctx context.Context, request *pb.GetLongURLRequest) 
 }
 
 func isHashValid(hash string) bool {
-	return len(hash) == shortening.ShortURLLength && regexp.MustCompile(`^[a-zA-Z0-9_]+$`).MatchString(hash)
+	return len(hash) == shortening.ShortURLLength && regexValidHashChars.MatchString(hash)
 }
