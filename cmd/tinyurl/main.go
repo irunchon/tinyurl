@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 
 	"github.com/irunchon/tinyurl/internal/pkg/config"
 
@@ -22,18 +21,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// TODO: port, etc. -> env
-const (
-	grpcPort = 50051
-)
-
 // TODO: error processing
 
 func main() {
-	storageType := os.Getenv("STORAGE_TYPE")
+	serviceConfigParameters := config.InitializeServiceParametersFromEnv()
 	var repo storage.Storage
 
-	switch storageType {
+	switch serviceConfigParameters.StorageType {
 	case "inmemory":
 		repo = inmemory.NewInMemoryStorage()
 	case "postgres":
@@ -49,16 +43,15 @@ func main() {
 		return
 	}
 
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", serviceConfigParameters.GRPCPort))
 	if err != nil {
 		panic(err)
 	}
 	grpcServer := grpc.NewServer()
 
 	go func() {
-		httpPort := os.Getenv("HTTP_PORT")
 		if err := runGatewayHTTPToGRPC(
-			httpPort,
+			serviceConfigParameters,
 			runtime.WithForwardResponseOption(responseHeaderMatcher), // middleware for redirect with HTTP code 301
 		); err != nil {
 			log.Fatalf("failed to serve: %v", err)
@@ -66,13 +59,13 @@ func main() {
 	}()
 
 	pb.RegisterShortenURLServer(grpcServer, app.New(repo))
-	log.Printf("GRPC server listening at port %d", grpcPort)
+	log.Printf("GRPC server listening at port %s", serviceConfigParameters.GRPCPort)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
 
-func setConnectionToPostgresDB(dbParameters config.DBConfig) (*sql.DB, error) {
+func setConnectionToPostgresDB(dbParameters config.DBParameters) (*sql.DB, error) {
 	postgresDBConnection := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbParameters.Host, dbParameters.Port, dbParameters.User, dbParameters.Password, dbParameters.Name)
@@ -85,19 +78,24 @@ func setConnectionToPostgresDB(dbParameters config.DBConfig) (*sql.DB, error) {
 	return db, err
 }
 
-func runGatewayHTTPToGRPC(serverPort string, opts ...runtime.ServeMuxOption) error {
+func runGatewayHTTPToGRPC(serviceConfigParameters config.ServiceParameters, opts ...runtime.ServeMuxOption) error {
 	ctx := context.Background()
 
 	mux := runtime.NewServeMux(opts...)
 
 	dialOpts := []grpc.DialOption{grpc.WithInsecure()}
-	err := pb.RegisterShortenURLHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), dialOpts)
+	err := pb.RegisterShortenURLHandlerFromEndpoint(
+		ctx,
+		mux,
+		fmt.Sprintf("localhost:%s", serviceConfigParameters.GRPCPort),
+		dialOpts,
+	)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("HTTP server listening at port %s", serverPort)
-	return http.ListenAndServe(fmt.Sprintf(":%s", serverPort), mux)
+	log.Printf("HTTP server listening at port %s", serviceConfigParameters.HTTPPort)
+	return http.ListenAndServe(fmt.Sprintf(":%s", serviceConfigParameters.HTTPPort), mux)
 }
 
 // For redirection if client use HTTP:
