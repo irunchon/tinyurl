@@ -45,7 +45,7 @@ func main() {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", serviceConfigParameters.GRPCPort))
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to start listening GRPC port: %v", err)
 	}
 	grpcServer := grpc.NewServer()
 
@@ -54,7 +54,7 @@ func main() {
 			serviceConfigParameters,
 			runtime.WithForwardResponseOption(responseHeaderMatcher), // middleware for redirect with HTTP code 301
 		); err != nil {
-			log.Fatalf("failed to serve: %v", err)
+			log.Fatalf("failed to run HTTP to GRPC gateway: %v", err)
 		}
 	}()
 
