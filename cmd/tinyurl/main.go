@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/irunchon/tinyurl/internal/pkg/config"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/irunchon/tinyurl/internal/app"
 	"github.com/irunchon/tinyurl/internal/pkg/storage"
@@ -35,7 +37,8 @@ func main() {
 	case "inmemory":
 		repo = inmemory.NewInMemoryStorage()
 	case "postgres":
-		db, err := setConnectionToPostgresDB()
+		dbParameters := config.InitializeDBParametersFromEnv()
+		db, err := setConnectionToPostgresDB(dbParameters)
 		if err != nil {
 			log.Fatalf("failed to connect to db: %v", err)
 		}
@@ -69,16 +72,10 @@ func main() {
 	}
 }
 
-func setConnectionToPostgresDB() (*sql.DB, error) {
-	host := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
-
+func setConnectionToPostgresDB(dbParameters config.DBConfig) (*sql.DB, error) {
 	postgresDBConnection := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, dbPort, user, password, dbname)
+		dbParameters.Host, dbParameters.Port, dbParameters.User, dbParameters.Password, dbParameters.Name)
 
 	db, err := sql.Open("postgres", postgresDBConnection)
 	if err != nil {

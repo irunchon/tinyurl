@@ -2,7 +2,7 @@ include .env
 export
 
 MIGRATIONS_DIR=internal/pkg/db/migrations
-POSTGRES_CONNECT_STRING="host=localhost user=test password=test dbname=urls_db sslmode=disable"
+POSTGRES_CONNECT_STRING="host=$(DB_HOST) user=$(DB_USER) password=$(DB_PASSWORD) dbname=$(DB_NAME) sslmode=disable"
 
 .PHONY: all
 all: goose-up
