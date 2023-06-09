@@ -21,8 +21,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// TODO: error processing
-
 func main() {
 	serviceConfigParameters := config.InitializeServiceParametersFromEnv()
 	var repo storage.Storage
@@ -39,8 +37,7 @@ func main() {
 		defer db.Close()
 		repo = postgres.NewPostgresStorage(db)
 	default:
-		fmt.Printf("Unknown storage type\n")
-		return
+		log.Fatalf("failed to parse storage type\n")
 	}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", serviceConfigParameters.GRPCPort))
@@ -61,7 +58,7 @@ func main() {
 	pb.RegisterShortenURLServer(grpcServer, app.New(repo))
 	log.Printf("GRPC server listening at port %s", serviceConfigParameters.GRPCPort)
 	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatalf("failed to run GRPC: %v", err)
 	}
 }
 
