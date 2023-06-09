@@ -22,7 +22,7 @@ import (
 
 // TODO: port, etc. -> env
 const (
-	host     = "localhost"
+	//host     = "localhost"
 	dbPort   = 5432
 	user     = "test"
 	password = "test"
@@ -75,6 +75,8 @@ func main() {
 }
 
 func setConnectionToPostgresDB() (*sql.DB, error) {
+	host := os.Getenv("DB_HOST")
+
 	postgresDBConnection := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, dbPort, user, password, dbname)
