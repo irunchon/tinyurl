@@ -1,9 +1,6 @@
 include .env
 export
 
-GRPC_PORT=50051
-HTTP_PORT=8080
-
 MIGRATIONS_DIR=internal/pkg/db/migrations
 POSTGRES_CONNECT_STRING="host=localhost user=test password=test dbname=urls_db sslmode=disable"
 

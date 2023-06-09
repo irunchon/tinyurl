@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/irunchon/tinyurl/internal/app"
@@ -23,13 +22,7 @@ import (
 
 // TODO: port, etc. -> env
 const (
-	//host     = "localhost"
-	//dbPort = 5432
-	//user     = "test"
-	//password = "test"
-	//dbname   = "urls_db"
 	grpcPort = 50051
-	//httpPort = 8080
 )
 
 // TODO: error processing
@@ -60,12 +53,8 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	go func() {
-		httpPort, err := strconv.Atoi(os.Getenv("HTTP_PORT"))
-		if err != nil {
-			log.Fatalf("failed to parse HTTP port: %v", err)
-		}
-
-		if err = runGatewayHTTPToGRPC(
+		httpPort := os.Getenv("HTTP_PORT")
+		if err := runGatewayHTTPToGRPC(
 			httpPort,
 			runtime.WithForwardResponseOption(responseHeaderMatcher), // middleware for redirect with HTTP code 301
 		); err != nil {
@@ -99,7 +88,7 @@ func setConnectionToPostgresDB() (*sql.DB, error) {
 	return db, err
 }
 
-func runGatewayHTTPToGRPC(serverPort int, opts ...runtime.ServeMuxOption) error {
+func runGatewayHTTPToGRPC(serverPort string, opts ...runtime.ServeMuxOption) error {
 	ctx := context.Background()
 
 	mux := runtime.NewServeMux(opts...)
@@ -110,8 +99,8 @@ func runGatewayHTTPToGRPC(serverPort int, opts ...runtime.ServeMuxOption) error 
 		return err
 	}
 
-	log.Printf("HTTP server listening at port %d", serverPort)
-	return http.ListenAndServe(fmt.Sprintf(":%d", serverPort), mux)
+	log.Printf("HTTP server listening at port %s", serverPort)
+	return http.ListenAndServe(fmt.Sprintf(":%s", serverPort), mux)
 }
 
 // For redirection if client use HTTP:
