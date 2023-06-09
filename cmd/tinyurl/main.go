@@ -25,7 +25,7 @@ const (
 	//host     = "localhost"
 	dbPort = 5432
 	//user     = "test"
-	password = "test"
+	//password = "test"
 	dbname   = "urls_db"
 	grpcPort = 50051
 	httpPort = 8080
@@ -77,6 +77,7 @@ func main() {
 func setConnectionToPostgresDB() (*sql.DB, error) {
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
 
 	postgresDBConnection := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
