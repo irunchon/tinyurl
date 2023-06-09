@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/irunchon/tinyurl/internal/app"
@@ -23,12 +24,12 @@ import (
 // TODO: port, etc. -> env
 const (
 	//host     = "localhost"
-	dbPort = 5432
+	//dbPort = 5432
 	//user     = "test"
 	//password = "test"
-	dbname   = "urls_db"
+	//dbname   = "urls_db"
 	grpcPort = 50051
-	httpPort = 8080
+	//httpPort = 8080
 )
 
 // TODO: error processing
@@ -43,7 +44,7 @@ func main() {
 	case "postgres":
 		db, err := setConnectionToPostgresDB()
 		if err != nil {
-			panic(err)
+			log.Fatalf("failed to connect to db: %v", err)
 		}
 		defer db.Close()
 		repo = postgres.NewPostgresStorage(db)
@@ -59,7 +60,12 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	go func() {
-		if err := runGatewayHTTPToGRPC(
+		httpPort, err := strconv.Atoi(os.Getenv("HTTP_PORT"))
+		if err != nil {
+			log.Fatalf("failed to parse HTTP port: %v", err)
+		}
+
+		if err = runGatewayHTTPToGRPC(
 			httpPort,
 			runtime.WithForwardResponseOption(responseHeaderMatcher), // middleware for redirect with HTTP code 301
 		); err != nil {
@@ -76,11 +82,13 @@ func main() {
 
 func setConnectionToPostgresDB() (*sql.DB, error) {
 	host := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
 
 	postgresDBConnection := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, dbPort, user, password, dbname)
 
 	db, err := sql.Open("postgres", postgresDBConnection)
