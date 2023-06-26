@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
+
+	"github.com/irunchon/tinyurl/internal/pkg/logger"
 
 	"github.com/irunchon/tinyurl/internal/pkg/config"
 
@@ -21,8 +22,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// TODO: add logging at debug level?
 func main() {
 	serviceConfigParameters := config.InitializeServiceParametersFromEnv()
+	logger.Initialize(serviceConfigParameters.LogLevel)
+
 	var repo storage.Storage
 
 	switch serviceConfigParameters.StorageType {
@@ -32,17 +36,17 @@ func main() {
 		dbParameters := config.InitializeDBParametersFromEnv()
 		db, err := setConnectionToPostgresDB(dbParameters)
 		if err != nil {
-			log.Fatalf("failed to connect to db: %v", err)
+			logger.Logger.Fatal(fmt.Sprintf("failed to connect to db: %v", err))
 		}
 		defer db.Close()
 		repo = postgres.NewPostgresStorage(db)
 	default:
-		log.Fatalf("failed to parse storage type\n")
+		logger.Logger.Fatal("failed to parse storage type")
 	}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", serviceConfigParameters.GRPCPort))
 	if err != nil {
-		log.Fatalf("failed to start listening GRPC port: %v", err)
+		logger.Logger.Fatal(fmt.Sprintf("failed to start listening GRPC port: %v", err))
 	}
 	grpcServer := grpc.NewServer()
 
@@ -51,14 +55,14 @@ func main() {
 			serviceConfigParameters,
 			runtime.WithForwardResponseOption(responseHeaderMatcher), // middleware for redirect with HTTP code 301
 		); err != nil {
-			log.Fatalf("failed to run HTTP to GRPC gateway: %v", err)
+			logger.Logger.Fatal(fmt.Sprintf("failed to run HTTP to GRPC gateway: %v", err))
 		}
 	}()
 
 	pb.RegisterShortenURLServer(grpcServer, app.New(repo))
-	log.Printf("GRPC server listening at port %s", serviceConfigParameters.GRPCPort)
+	logger.Logger.Info(fmt.Sprintf("GRPC server listening at port %s", serviceConfigParameters.GRPCPort))
 	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatalf("failed to run GRPC: %v", err)
+		logger.Logger.Fatal(fmt.Sprintf("failed to run GRPC: %v", err))
 	}
 }
 
@@ -91,7 +95,7 @@ func runGatewayHTTPToGRPC(serviceConfigParameters config.ServiceParameters, opts
 		return err
 	}
 
-	log.Printf("HTTP server listening at port %s", serviceConfigParameters.HTTPPort)
+	logger.Logger.Info(fmt.Sprintf("HTTP server listening at port %s", serviceConfigParameters.HTTPPort))
 	return http.ListenAndServe(fmt.Sprintf(":%s", serviceConfigParameters.HTTPPort), mux)
 }
 

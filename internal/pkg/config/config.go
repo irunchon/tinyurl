@@ -6,6 +6,7 @@ type ServiceParameters struct {
 	StorageType string
 	GRPCPort    string
 	HTTPPort    string
+	LogLevel    string
 }
 
 type DBParameters struct {
@@ -21,6 +22,7 @@ func InitializeServiceParametersFromEnv() ServiceParameters {
 		StorageType: os.Getenv("STORAGE_TYPE"),
 		GRPCPort:    os.Getenv("GRPC_PORT"),
 		HTTPPort:    os.Getenv("HTTP_PORT"),
+		LogLevel:    os.Getenv("LOG_LEVEL"),
 	}
 }
 
