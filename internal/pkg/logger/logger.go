@@ -16,6 +16,7 @@ func Initialize(logLevel string) {
 		loggerConfig.Level = parsedLogLevel
 	}
 
+	loggerConfig.DisableCaller = true
 	Logger = zap.Must(loggerConfig.Build())
 	defer Logger.Sync()
 
