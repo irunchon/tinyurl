@@ -27,7 +27,7 @@ func TestGetShortURL(t *testing.T) {
 	t.Run("OK - hash already exists in repo", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		url := "https://go.dev/play/"
-		expectedHash := "E3puYxWn1Q"
+		expectedHash := "Gr4vnVN37M"
 		testService.repo.SetShortAndLongURLs(expectedHash, url)
 		request := &pb.GetShortURLRequest{LongUrl: url}
 
@@ -39,7 +39,7 @@ func TestGetShortURL(t *testing.T) {
 	t.Run("OK - new hash generated", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
 		url := "https://github.com/"
-		expectedHash := "R2oCwKKhF6"
+		expectedHash := "2329iPHQCT"
 		request := &pb.GetShortURLRequest{LongUrl: url}
 
 		actual, err := testService.GetShortURL(ctx, request)
@@ -119,30 +119,30 @@ func TestGenerateUniqueHashForURL(t *testing.T) {
 		actual, err := testService.generateUniqueHashForURL("test")
 
 		assert.Nil(t, err)
-		assert.Equal(t, "O1CYK5Hql0", actual)
+		assert.Equal(t, "rBzeZLthat", actual)
 	})
 
 	t.Run("Hash already exists in repo", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
-		testService.repo.SetShortAndLongURLs("O1CYK5Hql0", "test")
+		testService.repo.SetShortAndLongURLs("rBzeZLthat", "test")
 
 		actual, err := testService.generateUniqueHashForURL("test")
 
-		assert.Equal(t, "O1CYK5Hql0", actual)
+		assert.Equal(t, "rBzeZLthat", actual)
 		assert.Equal(t, errorAlreadyExists, err)
 	})
 	t.Run("Hash shifting doesn't help", func(t *testing.T) {
 		testService := New(inmemory.NewInMemoryStorage())
-		testService.repo.SetShortAndLongURLs("O1CYK5Hql0", "test0")
-		testService.repo.SetShortAndLongURLs("1CYK5Hql0O", "test1")
-		testService.repo.SetShortAndLongURLs("CYK5Hql0O1", "test2")
-		testService.repo.SetShortAndLongURLs("YK5Hql0O1C", "test3")
-		testService.repo.SetShortAndLongURLs("K5Hql0O1CY", "test4")
-		testService.repo.SetShortAndLongURLs("5Hql0O1CYK", "test5")
-		testService.repo.SetShortAndLongURLs("Hql0O1CYK5", "test6")
-		testService.repo.SetShortAndLongURLs("ql0O1CYK5H", "test7")
-		testService.repo.SetShortAndLongURLs("l0O1CYK5Hq", "test8")
-		testService.repo.SetShortAndLongURLs("0O1CYK5Hql", "test9")
+		testService.repo.SetShortAndLongURLs("rBzeZLthat", "test0")
+		testService.repo.SetShortAndLongURLs("BzeZLthatr", "test1")
+		testService.repo.SetShortAndLongURLs("zeZLthatrB", "test2")
+		testService.repo.SetShortAndLongURLs("eZLthatrBz", "test3")
+		testService.repo.SetShortAndLongURLs("ZLthatrBze", "test4")
+		testService.repo.SetShortAndLongURLs("LthatrBzeZ", "test5")
+		testService.repo.SetShortAndLongURLs("thatrBzeZL", "test6")
+		testService.repo.SetShortAndLongURLs("hatrBzeZLt", "test7")
+		testService.repo.SetShortAndLongURLs("atrBzeZLth", "test8")
+		testService.repo.SetShortAndLongURLs("trBzeZLtha", "test9")
 
 		actual, err := testService.generateUniqueHashForURL("test")
 
