@@ -15,7 +15,6 @@ import (
 var errorAlreadyExists = errors.New("pair URL-hash already exists in repo")
 
 // GetShortURL generates short URL (hash) by long URL (example - HTTP POST method)
-// TODO: logging errors
 // TODO: mock tests for errors in repo
 func (s Service) GetShortURL(_ context.Context, request *pb.GetShortURLRequest) (*pb.GetShortURLResponse, error) {
 	if !IsUrl(request.LongUrl) {

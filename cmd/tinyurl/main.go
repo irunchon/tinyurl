@@ -22,7 +22,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// TODO: add logging at debug level?
+// TODO: add contexts to storage interface and implementation for tracing
 func main() {
 	serviceConfigParameters := config.InitializeServiceParametersFromEnv()
 	logger.Initialize(serviceConfigParameters.LogLevel)
